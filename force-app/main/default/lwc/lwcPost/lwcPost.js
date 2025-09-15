@@ -1,5 +1,5 @@
 import { LightningElement, track, wire } from 'lwc';
-import getposts from '@salesforce/apex/PostController.getposts';
+import getPosts from '@salesforce/apex/PostController.getPosts';
 // import createpost from '@salesforce/apex/PostController.createpost';
 // import updatepost from '@salesforce/apex/PostController.updatepost';
 // import deletepost from '@salesforce/apex/PostController.deletepost';
@@ -11,7 +11,7 @@ export default class Sf_Crud extends LightningElement {
     @track content = '';
     @track selectedPostId = null;
 
-    @wire(getposts)
+    @wire(getPosts)
         wiredPosts({error, data}){
             if(data){
                 this.posts = data;
