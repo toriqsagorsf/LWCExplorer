@@ -1,35 +1,58 @@
 public with sharing class PostController {
-    
-    // Retrieve posts
+
     @AuraEnabled(cacheable=true)
     public static List<Post__c> getPosts() {
-        return [SELECT Id, Title__c, Content__c, CreatedDate 
-                FROM Post__c 
-                ORDER BY CreatedDate DESC 
-                LIMIT 50];
+        // Basic object/field access checks (good practice)
+        if (!Schema.sObjectType.Post__c.isAccessible()) {
+            throw new AuraHandledException('You do not have access to Post__c.');
+        }
+        return [
+            SELECT Id, Title__c, Content__c, CreatedDate, LastModifiedDate
+            FROM Post__c
+            ORDER BY CreatedDate DESC
+            LIMIT 200
+        ];
     }
-    
-    // Create a new post
+
     @AuraEnabled
-    public static Post__c createPost(String title, String content) {
-        Post__c newPost = new Post__c(
-            Title__c = title,
-            Content__c = content
-        );
-        insert newPost;
-        return newPost;
+    public static Id createPost(String title, String content) {
+        try {       
+            if (!Schema.sObjectType.Post__c.isCreateable()) {
+                throw new AuraHandledException('You do not have create permission on Post__c.');
+            }
+            Post__c rec = new Post__c(
+                Title__c   = title,
+                Content__c = content
+            );
+            insert rec;
+            return rec.Id;
+        } catch (Exception e) {
+            System.debug(' Error =>> ' + e.getStackTraceString() + 'Message =>> ' + e.getMessage());
+        }
+        return null;
     }
-    
-    // Update existing post
+
     @AuraEnabled
-    public static Post__c updatePost(Id postId, String title, String content) {
-        Post__c updatePost = [SELECT Id, Title__c, Content__c 
-                            FROM Post__c 
-                            WHERE Id = :postId 
-                            LIMIT 1];
-        updatePost.Title__c = title;
-        updatePost.Content__c = content;
-        update updatePost;
-        return updatePost;
+    public static Post__c updatePost(Post__c post) {
+        if (!Schema.sObjectType.Post__c.isUpdateable()) {
+            throw new AuraHandledException('You do not have update permission on Post__c.');
+        }
+        // Only Id + updatable fields need to be set on "post"
+        update post;
+        // Return fresh copy
+        return [
+            SELECT Id, Title__c, Content__c, CreatedDate, LastModifiedDate
+            FROM Post__c
+            WHERE Id = :post.Id
+        ];
+    }
+
+    @AuraEnabled
+    public static Id deletePost(Id postId) {
+        if (!Schema.sObjectType.Post__c.isDeletable()) {
+            throw new AuraHandledException('You do not have delete permission on Post__c.');
+        }
+        delete [SELECT Id FROM Post__c WHERE Id = :postId];
+        return postId;
     }
 }

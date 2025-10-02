@@ -1,34 +1,48 @@
 <template>
-    <lightning-card title="Post Manager" icon-name="custom:custom63">
-        <!-- Input Form -->
-        <div class="slds-m-around_medium">
-            <lightning-input label="Title" value={title} onchange={handleTitleChange}></lightning-input>
-            <lightning-textarea label="Content" value={content} onchange={handleContentChange}></lightning-textarea>
+    <lightning-card title="Post__c CRUD" icon-name="standard:article">
+    <div class="slds-p-around_medium">
 
-            <template if:true={selectedPostId}>
-                <lightning-button class="slds-m-top_small" label="Update Post" onclick={handleUpdate}></lightning-button>
-            </template>
-            <template if:false={selectedPostId}>
-                <lightning-button class="slds-m-top_small" label="Create Post" onclick={handleCreate}></lightning-button>
-            </template>
-        </div>
+        <!-- Create / Edit form -->
+        <div class="slds-box slds-m-bottom_medium">
+            <div class="slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                    <lightning-input
+                        label="Title"
+                        value={form.title}
+                        data-field="title"
+                        onchange={handleInput}>
+                    </lightning-input>
+                </div>
+                <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                        label="Content"
+                        value={form.content}
+                        data-field="content"
+                        onchange={handleInput}>
+                    </lightning-textarea>
+                </div>
+            </div>
 
-        <!-- List of Posts -->
-        <template if:true={posts}>
-            <div class="slds-m-around_medium">
-                <template for:each={posts} for:item="post">
-                    <div key={post.Id} class="slds-box slds-m-bottom_small">
-                        <h3><b>{post.Title__c}</b></h3>
-                        <p>{post.Content__c}</p>
-                        <p class="slds-text-color_weak">Created: {post.CreatedDate}</p>
-                        <lightning-button variant="brand-outline" 
-                                        data-id={post.Id} 
-                                        label="Edit" 
-                                        onclick={handleEdit}>
-                        </lightning-button>
-                    </div>
+            <div class="slds-m-top_small">
+                <template if:false={isEditing}>
+                <lightning-button variant="brand" label="Create" onclick={handleCreate}></lightning-button>
+                </template>
+                <template if:true={isEditing}>
+                <lightning-button variant="brand" label="Save" class="slds-m-right_x-small" onclick={handleSave}></lightning-button>
+                <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
                 </template>
             </div>
-        </template>
+        </div>
+
+        <!-- List -->
+        <lightning-datatable
+            key-field="Id"
+            data={rows}
+            columns={columns}
+            hide-checkbox-column
+            onrowaction={handleRowAction}>
+        </lightning-datatable>
+
+    </div>
     </lightning-card>
 </template>
